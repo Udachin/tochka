@@ -35,9 +35,13 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id, ProductRepository $repository)
     {
-        //
+        $product = $repository->getById($id);
+        if ($product) {
+            return new \App\Http\Resources\Product($product);
+        }
+        throw new \Exception("Продукта с указанным id не существует");
     }
 
     /**

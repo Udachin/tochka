@@ -10,4 +10,9 @@ class ProductRepository
     {
         return Product::where("count", ">", "0")->get();
     }
+
+    public function getById(int $id)
+    {
+        return Product::find($id);
+    }
 }
