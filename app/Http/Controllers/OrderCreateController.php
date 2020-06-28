@@ -3,12 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateOrderRequest;
-use App\Order;
-use App\OrderData;
-use Illuminate\Support\Facades\DB;
+use App\OrderBookerService;
+use App\OrderInfoMapper;
+use App\ProductRequest;
+use App\ProductRequests;
 
 class OrderCreateController extends Controller
 {
+    /**
+     * @var OrderBookerService
+     */
+    private $orderBookerService;
+
+    public function __construct(OrderBookerService $orderBookerService)
+    {
+        $this->orderBookerService = $orderBookerService;
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -17,48 +28,22 @@ class OrderCreateController extends Controller
      */
     public function store(CreateOrderRequest $request)
     {
-        $validatedData = (object)$request->validated();
+        $request->validated();
 
-        // map order
-        $order              = new Order();
-        $order->first_name  = $validatedData->firstName;
-        $order->last_name   = $validatedData->lastName;
-        $order->middle_name = $validatedData->middleName;
-        $order->phone       = $validatedData->phone;
-        $order->email       = $validatedData->email;
+        $orderInfo = OrderInfoMapper::map($request);
 
-        $requestProductIdCounts = [];
-        foreach ($validatedData->orders as $requestOrder) {
-            $requestProductIdCounts[$requestOrder["id"]] = $requestOrder["count"];
+        $productRequests = new ProductRequests();
+        foreach ($request->orders as $requestOrder) {
+            $productRequest        = new ProductRequest();
+            $productRequest->id    = $requestOrder["id"];
+            $productRequest->count = $requestOrder["count"];
+            $productRequests->add($productRequest);
         }
 
-        DB::transaction(function () use ($order, $requestProductIdCounts) {
-            $ids           = join(',', array_keys($requestProductIdCounts));
-            $currentCounts = DB::select("SELECT id, count, price FROM product WHERE id IN ($ids)");
-
-            foreach ($currentCounts as $currentProduct) {
-                $currentProductId      = $currentProduct->id;
-                $currentProductCount   = $currentProduct->count;
-                $requestedProductCount = $requestProductIdCounts[$currentProductId];
-                if ($requestedProductCount > $currentProductCount) {
-                    throw new \Exception("Текущее доступное число товаров '$currentProductCount' для id = '$currentProductId', запрошено '$requestedProductCount'");
-                }
-
-                DB::update("UPDATE product SET count = count - :count WHERE id = :id", ["count" => $requestedProductCount, "id" => $currentProductId]);
-
-                $orderData            = new OrderData();
-                $orderData->productId = $currentProductId;
-                $orderData->count     = $currentProductCount;
-                $orderData->price     = $currentProductCount * $currentProduct->price;
-                $data[]               = $orderData;
-            }
-
-            $order->data = $data;
-            $order->save();
-        });
+        $orderId = $this->orderBookerService->book($orderInfo, $productRequests);
 
         return response()->json([
-            'orderId' => $order->id,
+            'orderId' => $orderId,
             'status'  => 'success',
         ]);
     }

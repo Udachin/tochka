@@ -19,7 +19,7 @@ class CreateOrderRequest extends FormRequest
             "middleName"     => "required",
             "email"          => "required|email",
             "phone"          => "required",
-            "orders.*.id"    => "required|integer",
+            "orders.*.id"    => "required|integer|exists:product,id",
             "orders.*.count" => "required|integer|min:0",
         ];
     }
