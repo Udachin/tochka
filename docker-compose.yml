@@ -52,6 +52,17 @@ services:
       - ./mysql/my.cnf:/etc/mysql/my.cnf
     networks:
       - app-network
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "63791:6379"
+    environment:
+      REDIS_REPLICATION_MODE: master
+    volumes:
+      - redisdata:/var/lib/redis/
+    networks:
+      - app-network
 #Docker Networks
 networks:
   app-network:
@@ -59,4 +70,6 @@ networks:
 #Volumes
 volumes:
   dbdata:
+    driver: local
+  redisdata:
     driver: local

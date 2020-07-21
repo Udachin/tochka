@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Redis;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,4 +16,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/mysql', function () {
     dd(DB::connection()->select("Select 1 + 1"));
+});
+
+Route::get('/redis', function () {
+    Redis::set('name', 'Kirill Udachin');
+    $values = Redis::get('name');
+    dd($values);
 });
