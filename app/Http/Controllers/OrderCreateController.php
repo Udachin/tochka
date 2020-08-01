@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateOrderRequest;
+use App\LogFacade;
 use App\OrderBookerService;
 use App\OrderInfoMapper;
 use App\ProductRequest;
@@ -28,6 +29,7 @@ class OrderCreateController extends Controller
      */
     public function store(CreateOrderRequest $request)
     {
+        LogFacade::info('Создание заказа');
         $request->validated();
 
         $orderInfo = OrderInfoMapper::map($request);
