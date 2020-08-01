@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repository\ProductRepository;
 use Illuminate\Http\Request;
+use Illuminate\Redis\RedisManager;
 
 class ProductController extends Controller
 {
@@ -35,9 +36,18 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id, ProductRepository $repository)
+    public function show($id, ProductRepository $repository, RedisManager $redis)
     {
-        $product = $repository->getById($id);
+        $cachedProduct = $redis->connection()->get('product.' . $id);
+
+        if ($cachedProduct) {
+            $product = unserialize($cachedProduct);
+        } else {
+            $product = $repository->getById($id);
+            $cachedProduct = serialize($product);
+            $redis->connection()->set('product.' . $id, $cachedProduct, 180);
+        }
+
         if ($product) {
             return new \App\Http\Resources\Product($product);
         }
