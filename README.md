@@ -3,8 +3,6 @@ git clone https://github.com/Udachin/tochka.git
 
 cd tochka
 
-docker-compose build
-
 docker-compose up -d
 
 docker run --rm -v $(pwd):/app composer install
