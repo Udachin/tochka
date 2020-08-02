@@ -16,7 +16,9 @@ docker exec app php artisan migrate:fresh --seed --force
 
 # Использование
 1. Получение списка всех продуктов
+
 Входные данные: GET http://{your_ip}:8080/api/product
+
 Выходные данные:
 ```json
 {
@@ -42,7 +44,9 @@ docker exec app php artisan migrate:fresh --seed --force
 ```
 
 2. Получение информации по конкретному продукту
+
 Входные данные: GET http://{your_ip}:8080/api/product/2
+
 Выходные данные:
 ```json
 {
@@ -58,6 +62,7 @@ docker exec app php artisan migrate:fresh --seed --force
 ```
 
 3. Создание заказа
+
 Входные данные: POST http://{your_ip}:8080/api/create-order
 ```json
 {
